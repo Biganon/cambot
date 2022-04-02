@@ -1,4 +1,5 @@
 import random
+import re
 from unidecode import unidecode
 from collections import defaultdict
 from .settings import *
@@ -57,28 +58,25 @@ class Game:
         await self.channel.send(f"Il y a un nouveau mot à deviner ! Il fait {len(self.target)} lettres.")
 
     async def parse(self, message):
-        content = message.content.strip()
-        if (len(content) >= 1 and content[0] == "-") or self.winner or not self.target: # special char, or somebody won, or never initialized
+        guess = unidecode(message.content.strip()).upper()
+
+        # if somebody won
+        if self.winner:
             return
 
-        # if the user is just chatting
-        if " " in content:
+        # if the game was never initialized
+        if not self.target:
             return
-        # if the guess is obviously not the same length (just chatting)
+
+        # if the message is not comprised of letters (with or without accents) only
+        if not re.match(r"^[A-Z]*$", guess):
+            return
+
+        # if the guess is obviously not the same length
         ratio = 2/3
-        if len(content) <= len(self.target) * ratio or len(self.target) <= len(content) * ratio:
-            return
-        # if the user post an emoji
-        if content[0] == ":":
-            return
-        # if the user post a link
-        if "://" in content:
-            return
-        # if the user post a gif (not sure about this one)
-        if len(content) == 0:
+        if len(guess) <= len(self.target) * ratio or len(self.target) <= len(guess) * ratio:
             return
 
-        guess = unidecode(content).upper()
         if WORDLE_FORCE_ALTERNATION and message.author == self.last_player:
             await self.channel.send(f"{message.author.mention} Laisse un peu jouer les autres !")
             return            
