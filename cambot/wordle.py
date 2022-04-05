@@ -75,14 +75,18 @@ class Game:
         if len(guess) <= len(self.target) * ratio or len(self.target) <= len(guess) * ratio:
             return
 
+        # check for errors and react accordingly
+        error = False
         if WORDLE_FORCE_ALTERNATION and message.author == self.last_player:
-            await self.channel.send(f"{message.author.mention} Laisse un peu jouer les autres !")
-            return            
+            await message.add_reaction("\N{BUSTS IN SILHOUETTE}")
+            error = True         
         if len(guess) != len(self.target):
-            await self.channel.send(f"{message.author.mention} Le mot à deviner fait {len(self.target)} lettres (ça ne compte pas comme un tour).")
-            return
+            await message.add_reaction("\N{LEFT RIGHT ARROW}")
+            error = True
         if guess not in valid_words:
-            await self.channel.send(f"{message.author.mention} `{guess}` n'est pas dans mon dictionnaire (ça ne compte pas comme un tour).")
+            await message.add_reaction("\N{EXCLAMATION QUESTION MARK}")
+            error = True
+        if error:
             return
 
         # everything is OK, validate the proposal
