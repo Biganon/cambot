@@ -63,17 +63,22 @@ async def on_message(message):
     if isinstance(message.channel, discord.channel.DMChannel):
         games_entered = [codenames_game for codenames_game in codenames_games.values() if codenames_game.get_player(message.author)]
 
-        if content_lowercase.startswith("say ") and message.author.name == "Biganon" and message.author.discriminator == "0001":
-            arguments = content[4:].split(" ")
-            channel_id = int(arguments[0])
-            to_say = " ".join(arguments[1:])
-            await bot.get_channel(channel_id).send(to_say)
+        # Admin commands
+        if message.author.name == "Biganon" and message.author.discriminator == "0001":
+            if regex := re.search(r"^[sS]ay ([0-9]+) (.*)$", content):
+                channel_id = int(regex.group(1))
+                to_say = regex.group(2)
+                await bot.get_channel(channel_id).send(to_say)
 
-        if content_lowercase == "target" and message.author.name == "Biganon" and message.author.discriminator == "0001":
-            output = ""
-            for wordle_game in wordle_games.values():
-                output += f"{wordle_game.channel.guild} > {wordle_game.channel.name} : {wordle_game.target}\n"
-            await message.author.send(output)
+            if regex := re.search(r"^wordle targets?$", content_lowercase):
+                output = ""
+                for wordle_game in wordle_games.values():
+                    output += f"{wordle_game.channel.guild} > {wordle_game.channel.name} : {wordle_game.target}\n"
+                await message.author.send(output)
+
+            if regex := re.search(r"^wordle reset ([0-9]+)$", content_lowercase):
+                channel_id = int(regex.group(1))
+                await wordle_games[channel_id].reset()
 
         # Codenames whispers
         if len(games_entered) == 1:
