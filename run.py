@@ -16,7 +16,6 @@ codenames_games = {}
 wordle_games = {}
 
 # Startup
-
 @bot.event
 async def on_ready():
     print(f"Connecté, nom {bot.user.name}, id {bot.user.id}")
@@ -50,12 +49,10 @@ async def on_ready():
                         await wordle_game.reset()
 
 # Receiving a message
-
 @bot.event
 async def on_message(message):
 
     # Ignore own messages
-
     if message.author == bot.user:
         return
 
@@ -63,7 +60,6 @@ async def on_message(message):
     content_lowercase = content.lower()
 
     # Private messages
-
     if isinstance(message.channel, discord.channel.DMChannel):
         games_entered = [codenames_game for codenames_game in codenames_games.values() if codenames_game.get_player(message.author)]
 
@@ -79,6 +75,7 @@ async def on_message(message):
                 output += f"{wordle_game.channel.guild} > {wordle_game.channel.name} : {wordle_game.target}\n"
             await message.author.send(output)
 
+        # Codenames whispers
         if len(games_entered) == 1:
             await codenames.process_whisper(games_entered[0], message)
         elif len(games_entered) > 1:
@@ -89,12 +86,10 @@ async def on_message(message):
         return
 
     # Help
-
     if re.search(r"^!(aide|help|commandes)$", content_lowercase):
         await print_help(message.channel)
 
     # Judge something
-
     if regex := re.search(r"^!juger (.+)$", content_lowercase):
         subject = regex.group(1).strip()
         score = int(hashlib.md5(bytes(subject.lower(), "utf-8")).hexdigest(), 16) % 2
@@ -103,7 +98,6 @@ async def on_message(message):
         await message.channel.send(output)
 
     # Dice
-
     if regex := re.search(r"^!(?P<number>\d+)?d[eé]s?(?P<maximum>\d+)?$", content_lowercase):
         thrower = message.author.display_name
         maximum = 6
@@ -130,7 +124,6 @@ async def on_message(message):
         await message.channel.send(output)
 
     # Codenames commands
-
     if message.channel.id in codenames_games.keys():
 
         game = codenames_games[message.channel.id]
@@ -163,12 +156,10 @@ async def on_message(message):
             await codenames.maybe_guess(game, message, regex.group(1))
 
     # Wordle
-
     if message.channel.id in wordle_games.keys():
         await wordle_games[message.channel.id].parse(message)
 
 # Help
-
 async def print_help(channel):
     output = """__Commandes de CamBot__
 
@@ -193,7 +184,6 @@ async def print_help(channel):
     await channel.send(output)
 
 # Let unprivileged users pin messages
-
 async def reaction_changed(payload):
     emoji = payload.emoji
     if not emoji.is_unicode_emoji():
