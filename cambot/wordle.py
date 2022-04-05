@@ -18,15 +18,13 @@ def validate(target, guess):
     copy = list(target)
     output = [0] * len(target)
 
-    # Look for the green squares :
-
+    # Look for the green squares
     for idx in range(len(target)):
         if target[idx] == guess[idx]:
             output[idx] = 2
             copy[idx] = None
 
-    # Look for the yellow squares :
-
+    # Look for the yellow squares
     for idx in range(len(target)):
         if target[idx] == guess[idx]:
             continue # ignore the letters that are green
@@ -60,19 +58,19 @@ class Game:
     async def parse(self, message):
         guess = unidecode(message.content.strip()).upper()
 
-        # if somebody won
+        # if somebody has already won, return silently
         if self.winner:
             return
 
-        # if the game was never initialized
+        # same if the game was never initialized
         if not self.target:
             return
 
-        # if the message is not comprised of letters (with or without accents) only
+        # same if the message is not comprised of letters (with or without accents) only
         if not re.match(r"^[A-Z]*$", guess):
             return
 
-        # if the guess is obviously not the same length
+        # same if the guess is obviously not the same length
         ratio = 2/3
         if len(guess) <= len(self.target) * ratio or len(self.target) <= len(guess) * ratio:
             return
@@ -87,6 +85,7 @@ class Game:
             await self.channel.send(f"{message.author.mention} `{guess}` n'est pas dans mon dictionnaire (ça ne compte pas comme un tour).")
             return
 
+        # everything is OK, validate the proposal
         self.tries += 1
         self.last_player = message.author
         result = validate(self.target, guess)
