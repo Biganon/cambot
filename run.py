@@ -91,7 +91,6 @@ async def on_message(message):
         return
 
     # Help
-
     if re.search(r"^!(aide|help|commandes)$", content_lowercase):
         await print_help(message.channel)
 

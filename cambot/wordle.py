@@ -46,6 +46,9 @@ class Game:
         self.tried = None 
 
     async def reset(self):
+        output = ""
+        if self.target and not self.winner:
+            output = f"Le mot précédent était : `{self.target}`\n\n"
         self.target = random.choice(tuple(x for x in target_words if len(x) >= WORDLE_MINLENGTH))
         self.winner = None
         self.tries = 0
@@ -53,7 +56,8 @@ class Game:
         self.scores = defaultdict(int)
         self.tried = set()
         await self.channel.edit(slowmode_delay=WORDLE_SLOWMODE)
-        await self.channel.send(f"Il y a un nouveau mot à deviner ! Il fait {len(self.target)} lettres.")
+        output += f"Il y a un nouveau mot à deviner ! Il fait {len(self.target)} lettres."
+        await self.channel.send(output)
 
     async def parse(self, message):
         guess = unidecode(message.content.strip()).upper()
