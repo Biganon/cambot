@@ -1,5 +1,5 @@
 import sys
-import discord
+import nextcord
 import hashlib
 import re
 import asyncio
@@ -11,7 +11,7 @@ import cambot.ephemeris as ephemeris
 from cambot.emojis import *
 from cambot.settings import *
 
-bot = discord.Client()
+bot = nextcord.Client()
 codenames_games = {}
 wordle_games = {}
 
@@ -60,7 +60,7 @@ async def on_message(message):
     content_lowercase = content.lower()
 
     # Private messages
-    if isinstance(message.channel, discord.channel.DMChannel):
+    if isinstance(message.channel, nextcord.channel.DMChannel):
         games_entered = [codenames_game for codenames_game in codenames_games.values() if codenames_game.get_player(message.author)]
 
         # Admin commands

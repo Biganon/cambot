@@ -1,7 +1,7 @@
 import os
 import requests
 from datetime import datetime
-from discord import Embed, Color
+from nextcord import Embed, Color
 import re
 import json
 import locale

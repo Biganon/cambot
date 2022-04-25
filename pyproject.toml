@@ -6,10 +6,11 @@ authors = ["Simon Junod <sj@simonjunod.ch>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-discord = "^1.0.1"
 unidecode = "^1.1.1"
 requests = "^2.24.0"
 bs4 = "^0.0.1"
+pip = "^22.0.4"
+nextcord = "^2.0.0-alpha.10"
 
 [tool.poetry.dev-dependencies]
 
