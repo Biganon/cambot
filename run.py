@@ -13,7 +13,6 @@ from cambot.settings import *
 
 bot = nextcord.Client()
 codenames_games = {}
-wordle_games = {}
 
 # Startup
 @bot.event
