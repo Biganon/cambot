@@ -8,6 +8,7 @@ from datetime import datetime
 import cambot.codenames as codenames
 import cambot.wordle as wordle
 import cambot.ephemeris as ephemeris
+import cambot.polls as polls
 from cambot.emojis import *
 from cambot.settings import *
 
@@ -164,6 +165,34 @@ async def on_message(message):
     if message.channel.id in wordle_games.keys():
         await wordle_games[message.channel.id].parse(message)
 
+    # Polls
+    bullet = r"(\b[a-zA-Z]\))"
+    if re.search(bullet, content):
+        parts = re.split(bullet, content) # split at x) bullets, and keep them (hence the capturing group)
+        parts = [stripped for part in parts if (stripped := part.strip())] # keep only non-empty-when-stripped parts (and strip them)
+        if re.fullmatch(bullet, parts[0]): # the first part is a bullet (i.e. no introductory text)
+            intro = ""
+        else:
+            intro = parts.pop(0)
+        poll = polls.Poll()
+        poll.owner = message.author
+        poll.intro = intro
+        for part in parts:
+            if re.fullmatch(bullet, part): # the part is a bullet
+                letter = part[0].lower()
+            else: # the part is an option
+                poll.options[letter] = part
+        if len(poll.options) > 20:
+            await message.channel.send("Erreur : 20 options maximum")
+        else:
+            output = f"{intro}\n\n"
+            for pair in sorted(poll.options.items(), key=lambda x:x[0]):
+                letter, option = pair
+                output += f":regional_indicator_{letter}: {option}\n"
+            poll.message = await message.channel.send(output, view=polls.ButtonView(owner=poll.owner))
+            for letter in sorted(poll.options.keys()):
+                await poll.message.add_reaction(LETTERS[letter])
+
 # Help
 async def print_help(channel):
     output = """__Commandes de CamBot__
@@ -183,7 +212,10 @@ async def print_help(channel):
     !jouer : lancer la partie
     !deviner `mot` : deviner le mot `mot`
 
-    **Divers**
+    **Sondages**
+    Question ? a) Option b) Autre option c) Etc.
+
+    **Aide**
     !aide : afficher ce message
     """
     await channel.send(output)
