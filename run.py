@@ -182,7 +182,9 @@ async def on_message(message):
                 letter = part[0].lower()
             else: # the part is an option
                 poll.options[letter] = part
-        if len(poll.options) > 20:
+        if len(poll.options) < 2:
+            pass
+        elif len(poll.options) > 20:
             await message.channel.send("Erreur : 20 options maximum")
         else:
             output = f"{intro}\n\n"
