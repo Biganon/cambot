@@ -49,7 +49,7 @@ class Game:
         output = ""
         if self.target and not self.winner:
             output = f"Le mot précédent était : `{self.target}`\n\n"
-        self.target = random.choice(tuple(x for x in target_words if len(x) >= WORDLE_MINLENGTH))
+        self.target = random.choice(tuple(x for x in target_words if WORDLE_MAXLENGTH >= len(x) >= WORDLE_MINLENGTH))
         self.winner = None
         self.tries = 0
         self.last_player = None
