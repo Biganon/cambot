@@ -47,6 +47,7 @@ class Game:
         self.scores = None
         self.tried = None
         self.last_datetime = None
+        self.resetters = set()
 
     async def reset(self):
         output = ""
@@ -59,12 +60,23 @@ class Game:
         self.scores = defaultdict(int)
         self.tried = set()
         self.last_datetime = None
+        self.resetters = set()
         await self.channel.edit(slowmode_delay=WORDLE_SLOWMODE)
         output += f"Il y a un nouveau mot à deviner ! Il fait {len(self.target)} lettres."
         await self.channel.send(output)
 
     async def parse(self, message):
         guess = unidecode(message.content.strip()).upper()
+
+        # if it's the special keyword 'reset', consider resetting
+        if guess == "RESET" and WORDLE_RESETTERS_NEEDED != 0:
+            if message.author in self.resetters:
+                return
+            self.resetters.add(message.author)
+            await self.channel.send(f"Réinitialisation : {len(self.resetters)}/{WORDLE_RESETTERS_NEEDED}")
+            if len(self.resetters) >= WORDLE_RESETTERS_NEEDED:
+                await self.reset()
+                return
 
         # if somebody has already won, return silently
         if self.winner:
