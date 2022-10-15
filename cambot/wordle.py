@@ -2,6 +2,8 @@ import random
 import re
 from unidecode import unidecode
 from collections import defaultdict
+from datetime import datetime
+from math import ceil
 from .settings import *
 
 with open(WORDLE_VALID_WORDS, "r") as f:
@@ -43,7 +45,8 @@ class Game:
         self.tries = 0
         self.last_player = None
         self.scores = None
-        self.tried = None 
+        self.tried = None
+        self.last_datetime = None
 
     async def reset(self):
         output = ""
@@ -55,6 +58,7 @@ class Game:
         self.last_player = None
         self.scores = defaultdict(int)
         self.tried = set()
+        self.last_datetime = None
         await self.channel.edit(slowmode_delay=WORDLE_SLOWMODE)
         output += f"Il y a un nouveau mot à deviner ! Il fait {len(self.target)} lettres."
         await self.channel.send(output)
@@ -81,9 +85,11 @@ class Game:
 
         # check for errors and react accordingly
         error = False
-        if WORDLE_FORCE_ALTERNATION and message.author == self.last_player:
+        if WORDLE_FORCE_ALTERNATION and message.author == self.last_player and (elapsed := (datetime.now() - self.last_datetime).total_seconds()) < WORDLE_ALTERNATION_TIMEOUT:
             await message.add_reaction("\N{BUSTS IN SILHOUETTE}")
-            error = True         
+            error = True
+            remaining = ceil(WORDLE_ALTERNATION_TIMEOUT - elapsed)
+            await self.channel.send(f"{message.author.mention} : tu pourras rejouer dans {remaining} seconde{'s' if remaining > 1 else ''}")
         if len(guess) != len(self.target):
             await message.add_reaction("\N{LEFT RIGHT ARROW}")
             error = True
@@ -96,6 +102,7 @@ class Game:
         # everything is OK, validate the proposal
         self.tries += 1
         self.last_player = message.author
+        self.last_datetime = datetime.now()
         result = validate(self.target, guess)
         points = 0
         for idx, letter in enumerate(guess):
