@@ -132,6 +132,7 @@ class Game:
         if guess == self.target:
             self.winner = message.author
             await self.channel.edit(slowmode_delay=0)
+            self.resetters = set()
             output += "\n\n:trophy: YOUPI :trophy:\n\nScores :\n\n"
             for idx, score in enumerate(sorted(self.scores.items(), key=lambda x:x[1], reverse=True)):
                 player, points = score
