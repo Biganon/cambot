@@ -65,7 +65,8 @@ async def on_message(message):
         games_entered = [codenames_game for codenames_game in codenames_games.values() if codenames_game.get_player(message.author)]
 
         # Admin commands
-        if message.author.name == "Biganon" and message.author.discriminator == "0001":
+        print(message.author.name)
+        if message.author.name == "biganon":
             if regex := re.search(r"^[sS]ay ([0-9]+) (.*)$", content):
                 channel_id = int(regex.group(1))
                 to_say = regex.group(2)
