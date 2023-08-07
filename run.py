@@ -82,6 +82,11 @@ async def on_message(message):
                 channel_id = int(regex.group(1))
                 await wordle_games[channel_id].reset()
 
+            if regex := re.search(r"^ephemeris$", content_lowercase):
+                embed = ephemeris.digest()
+                for channel_id in EPHEMERIS_CHANNEL_IDS:
+                    await bot.get_channel(channel_id).send(embed=embed)
+
         # Codenames whispers
         if len(games_entered) == 1:
             await codenames.process_whisper(games_entered[0], message)

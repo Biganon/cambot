@@ -12,10 +12,13 @@ from .saints import SAINTS
 def citation():
     try:
         ts = datetime.now().strftime("%s")
-        req = requests.get(f"https://fr.wikiquote.org/wiki/Wikiquote:Accueil?r={ts}")
+        req = requests.get("http://evene.lefigaro.fr/citations/citation-jour.php")
         soup = bs(req.text, features="html.parser")
-        citation = soup.find(lambda tag:tag.name=="i" and "Lumière sur" in tag.text).parent.parent.parent.findAll("div")[1].text.strip()
-        return f"*{citation}*"
+        bloc = soup.find("aside", {"class": "figsco__daily__citation__sidebar"})
+        citation = bloc.find("div", {"class":"figsco__quote__text"}).text.strip()
+        auteur = re.sub(r"/.*", "", bloc.find("div", {"class":"figsco__quote__from"}).text.strip()[3:]).strip()
+
+        return f"*{citation}*\n\n— {auteur}"
     except Exception:
         return "Impossible de trouver la citation du jour. Bouuuh !"
 
