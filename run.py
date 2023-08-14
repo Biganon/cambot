@@ -12,7 +12,12 @@ import cambot.polls as polls
 from cambot.emojis import *
 from cambot.settings import *
 
-bot = nextcord.Client()
+intents = nextcord.Intents.default()
+intents.typing = False
+intents.presences = False
+intents.message_content = True
+
+bot = nextcord.Client(intents=intents)
 codenames_games = {}
 wordle_games = {}
 
