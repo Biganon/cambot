@@ -1,9 +1,10 @@
-import sys
 import nextcord
 import hashlib
 import re
 import asyncio
 import random
+import base64
+import emoji
 from datetime import datetime
 import cambot.codenames as codenames
 import cambot.wordle as wordle
@@ -70,27 +71,57 @@ async def on_message(message):
         games_entered = [codenames_game for codenames_game in codenames_games.values() if codenames_game.get_player(message.author)]
 
         # Admin commands
-        print(message.author.name)
         if message.author.name == "biganon":
             if regex := re.search(r"^[sS]ay ([0-9]+) (.*)$", content):
                 channel_id = int(regex.group(1))
                 to_say = regex.group(2)
                 await bot.get_channel(channel_id).send(to_say)
 
-            if regex := re.search(r"^wordle targets?$", content_lowercase):
+            if regex := re.search(r"^[wW]ordle targets?$", content_lowercase):
                 output = ""
                 for wordle_game in wordle_games.values():
                     output += f"{wordle_game.channel.guild} > {wordle_game.channel.name} : {wordle_game.target}\n"
                 await message.author.send(output)
 
-            if regex := re.search(r"^wordle reset ([0-9]+)$", content_lowercase):
+            if regex := re.search(r"^[wW]ordle reset ([0-9]+)$", content_lowercase):
                 channel_id = int(regex.group(1))
                 await wordle_games[channel_id].reset()
 
-            if regex := re.search(r"^ephemeris$", content_lowercase):
+            if regex := re.search(r"^[eE]phemeris$", content_lowercase):
                 embed = ephemeris.digest()
                 for channel_id in EPHEMERIS_CHANNEL_IDS:
                     await bot.get_channel(channel_id).send(embed=embed)
+
+            if regex := re.search(r"^[dD]ump ([0-9]+)$", content):
+                guild_id = int(regex.group(1))
+                guild = bot.get_guild(guild_id)
+                string = ",".join(channel.name for channel in guild.text_channels)
+                b64 = base64.b64encode(string.encode("utf-8")).decode()
+                await message.author.send(string)
+                await message.author.send(b64)
+
+            if regex := re.search(r"[lL]oad ([0-9]+) (.*)$", content):
+                guild_id = int(regex.group(1))
+                guild = bot.get_guild(guild_id)
+                b64 = regex.group(2)
+                string = base64.b64decode(b64.encode("utf-8")).decode()
+                names = string.split(",")
+                if len(names) != len(guild.text_channels):
+                    await message.author.send(f"Erreur : {len(names)} noms fournis, mais {len(guild.text_channels)} canaux trouvés")
+                    return
+                for idx, channel in enumerate(guild.text_channels):
+                    await channel.edit(name=names[idx])
+
+            if regex := re.search(r"[pP]refix ([0-9]+) (.*)$", content):
+                guild_id = int(regex.group(1))
+                guild = bot.get_guild(guild_id)
+                prefix = regex.group(2)
+                for channel in guild.text_channels:
+                    if emoji.is_emoji(channel.name[0]):
+                        unprefixed = channel.name[1:]
+                    else:
+                        unprefixed = channel.name
+                    await channel.edit(name=prefix+unprefixed)
 
         # Codenames whispers
         if len(games_entered) == 1:
