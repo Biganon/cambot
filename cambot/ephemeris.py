@@ -11,14 +11,14 @@ from .saints import SAINTS
 
 def citation():
     try:
-        ts = datetime.now().strftime("%s")
-        req = requests.get("http://evene.lefigaro.fr/citations/citation-jour.php")
+        req = requests.get("http://www.unjourunpoeme.fr")
         soup = bs(req.text, features="html.parser")
-        bloc = soup.find("aside", {"class": "figsco__daily__citation__sidebar"})
-        citation = bloc.find("div", {"class":"figsco__quote__text"}).text.strip()
-        auteur = re.sub(r"/.*", "", bloc.find("div", {"class":"figsco__quote__from"}).text.strip()[3:]).strip()
+        bloc = soup.find("div", {"class": "poemedujour"})
+        title = bloc.find("h3", {"class": "posttitle"}).text.strip()
+        author = bloc.find("a", {"class": "poemehasardauteur"}).text.strip()
+        poem = "\n\n".join(s for c in bloc.find("blockquote").contents if (s := c.text.strip()))
 
-        return f"*{citation}*\n\n— {auteur}"
+        return f"# {title}\n\n**{author}**\n\n{poem}"
     except Exception:
         return "Impossible de trouver la citation du jour. Bouuuh !"
 
