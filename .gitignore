@@ -1,6 +1,10 @@
 __pycache__/
 *.py[cod]
 
+.venv
+
 settings.py
 grammalecte.txt
 wordlists
+
+
