@@ -11,8 +11,7 @@ from .saints import SAINTS
 
 def citation():
     try:
-        req = requests.get("http://www.unjourunpoeme.fr")
-        soup = bs(req.text, features="html.parser")
+        soup = bs(requests.get("http://www.unjourunpoeme.fr").text, features="html.parser")
         bloc = soup.find("div", {"class": "poemedujour"})
         title = bloc.find("h3", {"class": "posttitle"}).text.strip()
         author = bloc.find("a", {"class": "poemehasardauteur"}).text.strip()
@@ -24,8 +23,7 @@ def citation():
 
 
 def saint():
-    today = datetime.now().strftime("%m/%d")
-    return SAINTS[today]
+    return SAINTS[datetime.now().strftime("%m/%d")]
 
 
 def weather_emoji(_id):
@@ -70,18 +68,14 @@ def digest():
         pass
     now = datetime.now()
 
-    include_citation = False
-    include_weather = True
-    include_artwork = True
-
     embed = Embed(color=[Color.red(), Color.gold(), Color.orange(), Color.blue(), Color.green(), Color.magenta(), Color.purple()][now.weekday()])
     embed.title = "Bonjour !"
     embed.description = f"Nous sommes le {now.strftime('%A %-d %B')} ({saint()})"
 
-    if include_citation:
+    if EPHEMERIS_INCLUDE_CITATION:
         embed.description += f"\n\n{citation()}\n\u200B"
 
-    if include_weather:
+    if EPHEMERIS_INCLUDE_WEATHER:
         w_strings = []
         for w in weather(46.5196661, 6.6325467):
             w_strings.append(f"{w['emoji']} {w['description']} ({w['temp']}°C, {w['wind_speed']} km/h)")
@@ -89,9 +83,34 @@ def digest():
         embed.add_field(name="Après-midi", value=w_strings[1])
         embed.add_field(name="Soir", value=w_strings[2])
 
-    if include_artwork:
-        embed.set_image("https://uploads3.wikiart.org/00340/images/tintoretto/the-miracle-of-st-mark-freeing-the-slave.jpg")
-        embed.set_footer(text="Coucou")
+    if EPHEMERIS_INCLUDE_ARTWORK:
+        soup = bs(requests.get("https://www.wikiart.org/").text, features="html.parser")
+
+        j = json.loads(soup.find("main", {"class": "wiki-layout-main-page"})["ng-init"].splitlines()[0][28:-1])
+
+        images = [
+            {
+                "url": j["ImageDescription"]["Url"],
+                "width": j["ImageDescription"]["Width"],
+                "height": j["ImageDescription"]["Height"],
+            },
+            {
+                "url": j["PaintingJson"]["image"],
+                "width": j["PaintingJson"]["width"],
+                "height": j["PaintingJson"]["height"],
+            },
+        ]
+
+        if isinstance(j["PaintingJson"]["images"], list):
+            for image in j["PaintingJson"]["images"]:
+                images.append({
+                    "url": image["image"],
+                    "width": image["width"],
+                    "height": image["height"],
+                })
+
+        embed.set_image(max(images, key=lambda x: x["width"] * x["height"])["url"])
+        embed.set_footer(text=f"{j['ArtistName']} - {j['Title']} ({j['CompletitionYear']})")
 
     return embed
 
