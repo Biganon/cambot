@@ -45,17 +45,17 @@ def weather_emoji(_id):
 
 def weather(lat, lon):
     r = requests.get(f"https://api.openweathermap.org/data/2.5/"
-                     f"onecall?lat={lat}&lon={lon}&appid={OWM_KEY}&lang=fr&units=metric")
+                     f"forecast?lat={lat}&lon={lon}&appid={OWM_KEY}&lang=fr&units=metric")
     j = json.loads(r.text)
 
     next_hours = []
     for i in (2, 8, 14):
-        hourly = j["hourly"][i]
+        hourly = j["list"][i]
         next_hours.append({"time": datetime.fromtimestamp(hourly["dt"]).strftime("%H:%M"),
                            "emoji": weather_emoji(hourly["weather"][0]["id"]),
                            "description": hourly["weather"][0]["description"],
-                           "temp": round(hourly["temp"]),
-                           "wind_speed": round(hourly["wind_speed"] * 3.6)
+                           "temp": round(hourly["main"]["temp"]),
+                           "wind_speed": round(hourly["wind"]["speed"] * 3.6)
                            })
 
     return next_hours
