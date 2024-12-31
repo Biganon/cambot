@@ -49,8 +49,12 @@ def weather(lat, lon):
     j = json.loads(r.text)
 
     next_hours = []
-    for i in (2, 8, 14):
+    for i in (0, 2, 4):
         hourly = j["list"][i]
+        print("l'index correspond à :")
+        print(hourly["dt"])
+        print(hourly["dt_txt"])
+        
         next_hours.append({"time": datetime.fromtimestamp(hourly["dt"]).strftime("%H:%M"),
                            "emoji": weather_emoji(hourly["weather"][0]["id"]),
                            "description": hourly["weather"][0]["description"],
